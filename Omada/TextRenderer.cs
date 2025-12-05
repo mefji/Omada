@@ -2,24 +2,22 @@
 {
     internal static class TextRenderer
     {
-        public static void DrawText(char[,] buffer, int x0, int y0, string text)
-        {
-            int height = buffer.GetLength(0);
-            int width = buffer.GetLength(1);
+        private const int Width = 120;
+        private const int Height = 30;
 
-            if (y0 < 0 || y0 >= height)
-            {
-                return;
-            }
+        public static void DrawText(char[] buffer, int x0, int y0, string text)
+        {
+            if (y0 < 0 || y0 >= Height) return;
 
             for (int i = 0; i < text.Length; i++)
             {
                 int x = x0 + i;
-                if (x < 0 || x >= width)
+                if (x < 0 || x >= Width)
                 {
                     break;
                 }
-                buffer[y0, x] = text[i];
+
+                buffer[y0 * Width + x] = text[i];
             }
         }
     }

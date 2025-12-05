@@ -2,12 +2,12 @@
 
 namespace Omada
 {
-    internal class Player
+    internal class Player : GameObject
     {
         public Vector2 Position;
         public int Rows;
         public int Cols;
-        public char[,] Shape;
+        public char[] Shape;
 
         public Player(Vector2 position, int rows, int cols)
         {
@@ -20,6 +20,11 @@ namespace Omada
         public void UpdateShape()
         {
             Shape = ShapeFactory.CreateBox('@', Rows, Cols);
+        }
+
+        public override void Render(char[] buffer)
+        {
+            ShapeRenderer.DrawShape(buffer, Position, Shape, Rows, Cols);
         }
     }
 }

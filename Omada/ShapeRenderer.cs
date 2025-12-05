@@ -1,12 +1,14 @@
-﻿namespace Omada
+﻿using System.Numerics;
+
+namespace Omada
 {
     internal static class ShapeRenderer
     {
-        public static void DrawShape(char[,] buffer, System.Numerics.Vector2 position, char[,] shape)
-        {
-            int rows = shape.GetLength(0);
-            int cols = shape.GetLength(1);
+        private const int Width = 120;
+        private const int Height = 30;
 
+        public static void DrawShape(char[] buffer, Vector2 position, char[] shape, int rows, int cols)
+        {
             int x0 = (int)position.X;
             int y0 = (int)position.Y;
 
@@ -14,15 +16,13 @@
             {
                 x0 = 0;
             }
+
             if (y0 < 0)
             {
                 y0 = 0;
             }
 
-            int height = buffer.GetLength(0);
-            int width = buffer.GetLength(1);
-
-            if (x0 >= width || y0 >= height)
+            if (x0 >= Width || y0 >= Height)
             {
                 return;
             }
@@ -31,24 +31,24 @@
             {
                 int cy = y0 + y;
 
-                if (cy < 0)
+                if (cy < 0) 
                 {
                     continue;
                 }
 
-                if (cy >= height)
+                if (cy >= Height) 
                 {
                     break;
-                }
+                } 
 
                 for (int x = 0; x < cols; x++)
                 {
                     int cx = x0 + x;
-                    if (cx < 0 || cx >= width)
+                    if (cx < 0 || cx >= Width)
                     {
                         continue;
-                    }
-                    buffer[cy, cx] = shape[y, x];
+                    } 
+                    buffer[cy * Width + cx] = shape[y * cols + x];
                 }
             }
         }

@@ -2,15 +2,12 @@
 {
     internal static class ShapeFactory
     {
-        public static char[,] CreateBox(char c, int rows, int cols)
+        public static char[] CreateBox(char c, int rows, int cols)
         {
-            char[,] box = new char[rows, cols];
-            for (int y = 0; y < rows; y++)
+            char[] box = new char[rows * cols];
+            for (int i = 0; i < rows * cols; i++)
             {
-                for (int x = 0; x < cols; x++)
-                {
-                    box[y, x] = c;
-                }
+                box[i] = c;
             }
             return box;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Text;
@@ -16,6 +17,9 @@ namespace Omada
         static Box topBox;
         static Box bottomBox;
 
+        static List<GameObject> objects = new List<GameObject>();
+        static char[] buffer = new char[Height * Width]; 
+
         static int lives = MaxLives;
         static double timeAlive = 0;
         static int fps = 0;
@@ -30,6 +34,10 @@ namespace Omada
             player = new Player(new Vector2(2, 8), 5, 5);
             topBox = new Box(new Vector2(80, 3), 5, 10, new Vector2(-1, 0), '#');
             bottomBox = new Box(new Vector2(60, 18), 5, 10, new Vector2(1, 0), '#');
+
+            objects.Add(player);
+            objects.Add(topBox);
+            objects.Add(bottomBox);
 
             Stopwatch stopwatch = new Stopwatch();
             Stopwatch fpsWatch = new Stopwatch();
@@ -104,16 +112,12 @@ namespace Omada
         {
             timeAlive += dt;
 
-            topBox.Position += topBox.Velocity;
-            if (topBox.Position.X < 0 || topBox.Position.X + topBox.Cols >= Width)
+            foreach (var obj in objects)
             {
-                topBox.Velocity = new Vector2(-topBox.Velocity.X, topBox.Velocity.Y);
-            }
-
-            bottomBox.Position += bottomBox.Velocity;
-            if (bottomBox.Position.X < 0 || bottomBox.Position.X + bottomBox.Cols >= Width)
-            {
-                bottomBox.Velocity = new Vector2(-bottomBox.Velocity.X, bottomBox.Velocity.Y);
+                if (obj.IsActive)
+                {
+                    obj.Update(dt);
+                }
             }
 
             if (CollisionChecker.CheckCollision(player, topBox))
@@ -160,38 +164,24 @@ namespace Omada
 
         static void Render()
         {
-            char[,] buffer = new char[Height, Width];
-
-            for (int y = 0; y < Height; y++)
+            for (int i = 0; i < buffer.Length; i++)
             {
-                for (int x = 0; x < Width; x++)
-                {
-                    buffer[y, x] = ' ';
-                }
+                buffer[i] = ' ';
             }
 
             TextRenderer.DrawText(buffer, 0, 0, $"FPS: {fps}");
             TextRenderer.DrawText(buffer, 0, 1, $"Time Alive: {timeAlive:000.0} | Life: {lives}");
 
-            ShapeRenderer.DrawShape(buffer, player.Position, player.Shape);
-            ShapeRenderer.DrawShape(buffer, topBox.Position, topBox.Shape);
-            ShapeRenderer.DrawShape(buffer, bottomBox.Position, bottomBox.Shape);
-
-            StringBuilder sb = new StringBuilder(Width * Height + Height);
-            for (int y = 0; y < Height; y++)
+            foreach (var obj in objects)
             {
-                for (int x = 0; x < Width; x++)
+                if (obj.IsActive)
                 {
-                    sb.Append(buffer[y, x]);
-                }
-                if (y < Height - 1)
-                {
-                    sb.Append('\n');
+                    obj.Render(buffer);
                 }
             }
 
             Console.SetCursorPosition(0, 0);
-            Console.Write(sb.ToString());
+            Console.Write(buffer);
         }
     }
 }
