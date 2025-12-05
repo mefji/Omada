@@ -1,72 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Numerics;
-using System.Text;
-using System.Threading;
+﻿using System.Numerics;
 
 namespace Omada
 {
     internal class Program
     {
-        const int Width = 120;
-        const int Height = 30;
         const int MaxLives = 3;
+        const double TargetFps = 300;
 
-        static Player player;
-        static Box topBox;
-        static Box bottomBox;
+        static Player Player;
+        static Box TopBox;
+        static Box BottomBox;
 
-        static List<GameObject> objects = new List<GameObject>();
-        static char[] buffer = new char[Height * Width]; 
+        static List<GameObject> Objects = new List<GameObject>();
+        static char[] Buffer = new char[GameParameters.ScreenHeight * GameParameters.ScreenWidth]; 
 
-        static int lives = MaxLives;
-        static double timeAlive = 0;
-        static int fps = 0;
+        static int Lives = MaxLives;
+        static double TimeAlive = 0;
+        static double Fps = 0;
+        static double TargetDeltaTime = 1.0 / TargetFps;
 
         static void Main(string[] args)
         {
             Console.Title = "Omada";
             Console.CursorVisible = false;
-            Console.SetWindowSize(Width, Height);
-            Console.SetBufferSize(Width, Height);
+            Console.SetWindowSize(GameParameters.ScreenWidth, GameParameters.ScreenHeight);
+            Console.SetBufferSize(GameParameters.ScreenWidth, GameParameters.ScreenHeight);
 
-            player = new Player(new Vector2(2, 8), 5, 5);
-            topBox = new Box(new Vector2(80, 3), 5, 10, new Vector2(-1, 0), '#');
-            bottomBox = new Box(new Vector2(60, 18), 5, 10, new Vector2(1, 0), '#');
+            Player = new Player(new Vector2(2, 8), 5, 5);
+            TopBox = new Box(new Vector2(80, 3), 5, 10, new Vector2(-60, 0), '#');
+            BottomBox = new Box(new Vector2(60, 18), 5, 10, new Vector2(60, 0), '#');
 
-            objects.Add(player);
-            objects.Add(topBox);
-            objects.Add(bottomBox);
+            Objects.Add(Player);
+            Objects.Add(TopBox);
+            Objects.Add(BottomBox);
 
-            Stopwatch stopwatch = new Stopwatch();
-            Stopwatch fpsWatch = new Stopwatch();
-            int frames = 0;
+            DateTime startTime = DateTime.Now;
+            double previousTime = 0;
+            double currentTime = 0;
+            double deltaTime = 0;
 
-            stopwatch.Start();
-            fpsWatch.Start();
-
-            while (lives > 0 && player.Rows > 0)
+            while (Lives > 0 && Player.Rows > 0)
             {
-                double dt = stopwatch.Elapsed.TotalSeconds;
-                stopwatch.Restart();
+                currentTime = (DateTime.Now - startTime).TotalSeconds;
+                deltaTime += currentTime - previousTime;
+                previousTime = currentTime;
 
-                HandleInput();
-                Update(dt);
-                Render();
-
-                frames++;
-                if (fpsWatch.ElapsedMilliseconds >= 1000)
+                if (deltaTime < TargetDeltaTime)
                 {
-                    fps = frames;
-                    frames = 0;
-                    fpsWatch.Restart();
+                    continue;
                 }
 
-                Thread.Sleep(5);
+                Fps = Math.Round(1.0 / deltaTime);
+
+                HandleInput();
+                Update((float)deltaTime);
+                Render();
+                deltaTime = 0;
             }
 
-            Console.SetCursorPosition(0, Height - 1);
+            Console.SetCursorPosition(0, GameParameters.ScreenHeight - 1);
             Console.Write("Game Over. Press any key...");
             Console.ReadKey(true);
         }
@@ -79,53 +71,53 @@ namespace Omada
 
                 if (key == ConsoleKey.LeftArrow)
                 {
-                    if (player.Position.X > 0)
+                    if (Player.Position.X > 0)
                     {
-                        player.Position = new Vector2(player.Position.X - 1, player.Position.Y);
+                        Player.Position = new Vector2(Player.Position.X - 1, Player.Position.Y);
                     }
                 }
                 else if (key == ConsoleKey.RightArrow)
                 {
-                    if (player.Position.X + player.Cols < Width)
+                    if (Player.Position.X + Player.Cols < GameParameters.ScreenWidth)
                     {
-                        player.Position = new Vector2(player.Position.X + 1, player.Position.Y);
+                        Player.Position = new Vector2(Player.Position.X + 1, Player.Position.Y);
                     }
                 }
                 else if (key == ConsoleKey.UpArrow)
                 {
-                    if (player.Position.Y > 2)
+                    if (Player.Position.Y > 2)
                     {
-                        player.Position = new Vector2(player.Position.X, player.Position.Y - 1);
+                        Player.Position = new Vector2(Player.Position.X, Player.Position.Y - 1);
                     }
                 }
                 else if (key == ConsoleKey.DownArrow)
                 {
-                    if (player.Position.Y + player.Rows < Height)
+                    if (Player.Position.Y + Player.Rows < GameParameters.ScreenHeight)
                     {
-                        player.Position = new Vector2(player.Position.X, player.Position.Y + 1);
+                        Player.Position = new Vector2(Player.Position.X, Player.Position.Y + 1);
                     }
                 }
             }
         }
 
-        static void Update(double dt)
+        static void Update(float deltaTime)
         {
-            timeAlive += dt;
+            TimeAlive += deltaTime;
 
-            foreach (var obj in objects)
+            foreach (var obj in Objects)
             {
                 if (obj.IsActive)
                 {
-                    obj.Update(dt);
+                    obj.Update(deltaTime);
                 }
             }
 
-            if (CollisionChecker.CheckCollision(player, topBox))
+            if (CollisionChecker.CheckCollision(Player, TopBox))
             {
                 HitPlayer();
             }
 
-            if (CollisionChecker.CheckCollision(player, bottomBox))
+            if (CollisionChecker.CheckCollision(Player, BottomBox))
             {
                 HitPlayer();
             }
@@ -133,55 +125,55 @@ namespace Omada
 
         static void HitPlayer()
         {
-            if (lives <= 0 || player.Rows <= 0)
+            if (Lives <= 0 || Player.Rows <= 0)
             {
                 return;
             }
 
-            lives--;
+            Lives--;
 
-            if (player.Rows > 0)
+            if (Player.Rows > 0)
             {
-                player.Rows -= 1;
-                player.UpdateShape();
+                Player.Rows -= 1;
+                Player.UpdateShape();
             }
 
-            if (player.Rows <= 0)
+            if (Player.Rows <= 0)
             {
-                lives = 0;
+                Lives = 0;
                 return;
             }
 
-            if (player.Position.Y + player.Rows >= Height)
+            if (Player.Position.Y + Player.Rows >= GameParameters.ScreenHeight)
             {
-                player.Position = new Vector2(player.Position.X, Height - player.Rows - 1);
+                Player.Position = new Vector2(Player.Position.X, GameParameters.ScreenHeight - Player.Rows - 1);
             }
-            if (player.Position.Y < 2)
+            if (Player.Position.Y < 2)
             {
-                player.Position = new Vector2(player.Position.X, 2);
+                Player.Position = new Vector2(Player.Position.X, 2);
             }
         }
 
         static void Render()
         {
-            for (int i = 0; i < buffer.Length; i++)
+            for (int i = 0; i < Buffer.Length; i++)
             {
-                buffer[i] = ' ';
+                Buffer[i] = ' ';
             }
 
-            TextRenderer.DrawText(buffer, 0, 0, $"FPS: {fps}");
-            TextRenderer.DrawText(buffer, 0, 1, $"Time Alive: {timeAlive:000.0} | Life: {lives}");
+            TextRenderer.DrawText(Buffer, 0, 0, $"FPS: {Fps}");
+            TextRenderer.DrawText(Buffer, 0, 1, $"Time Alive: {TimeAlive:000.0} | Life: {Lives}");
 
-            foreach (var obj in objects)
+            foreach (var obj in Objects)
             {
                 if (obj.IsActive)
                 {
-                    obj.Render(buffer);
+                    obj.Render(Buffer);
                 }
             }
 
             Console.SetCursorPosition(0, 0);
-            Console.Write(buffer);
+            Console.Write(Buffer);
         }
     }
 }

@@ -4,8 +4,6 @@ namespace Omada
 {
     internal class Box : GameObject
     {
-        const int ScreenWidth = 120;
-
         public Vector2 Position;
         public int Rows;
         public int Cols;
@@ -21,9 +19,9 @@ namespace Omada
             Shape = ShapeFactory.CreateBox(c, Rows, Cols);
         }
 
-        public override void Update(double dt)
+        public override void Update(float deltaTime)
         {
-            Position += Velocity;
+            Position += Velocity * deltaTime;
 
             if (Position.X < 0)
             {
@@ -31,9 +29,9 @@ namespace Omada
                 Velocity = new Vector2(-Velocity.X, Velocity.Y);
             }
 
-            if (Position.X + Cols >= ScreenWidth)
+            if (Position.X + Cols >= GameParameters.ScreenWidth)
             {
-                Position = new Vector2(ScreenWidth - Cols - 1, Position.Y);
+                Position = new Vector2(GameParameters.ScreenWidth - Cols - 1, Position.Y);
                 Velocity = new Vector2(-Velocity.X, Velocity.Y);
             }
         }

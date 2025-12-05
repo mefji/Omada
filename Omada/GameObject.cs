@@ -4,7 +4,7 @@
     {
         public bool IsActive { get; set; } = true;
 
-        public virtual void Update(double dt)
+        public virtual void Update(float deltaTime)
         {
 
         }

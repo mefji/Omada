@@ -9,46 +9,46 @@ namespace Omada
 
         public static void DrawShape(char[] buffer, Vector2 position, char[] shape, int rows, int cols)
         {
-            int x0 = (int)position.X;
-            int y0 = (int)position.Y;
+            int startX = (int)position.X;
+            int startY = (int)position.Y;
 
-            if (x0 < 0)
+            if (startX < 0)
             {
-                x0 = 0;
+                startX = 0;
             }
 
-            if (y0 < 0)
+            if (startY < 0)
             {
-                y0 = 0;
+                startY = 0;
             }
 
-            if (x0 >= Width || y0 >= Height)
+            if (startX >= Width || startY >= Height)
             {
                 return;
             }
 
             for (int y = 0; y < rows; y++)
             {
-                int cy = y0 + y;
+                int currentY = startY + y;
 
-                if (cy < 0) 
+                if (currentY < 0) 
                 {
                     continue;
                 }
 
-                if (cy >= Height) 
+                if (currentY >= Height) 
                 {
                     break;
                 } 
 
                 for (int x = 0; x < cols; x++)
                 {
-                    int cx = x0 + x;
-                    if (cx < 0 || cx >= Width)
+                    int currentX = startX + x;
+                    if (currentX < 0 || currentX >= Width)
                     {
                         continue;
                     } 
-                    buffer[cy * Width + cx] = shape[y * cols + x];
+                    buffer[currentY * Width + currentX] = shape[y * cols + x];
                 }
             }
         }

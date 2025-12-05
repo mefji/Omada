@@ -13,12 +13,12 @@ namespace Omada
             {
                 for (int x = 0; x < cols; x++)
                 {
-                    int px = (int)player.Position.X + x;
-                    int py = (int)player.Position.Y + y;
+                    int playerX = (int)player.Position.X + x;
+                    int playerY = (int)player.Position.Y + y;
 
-                    if (px >= (int)box.Position.X && px < (int)box.Position.X + box.Cols)
+                    if (playerX >= (int)box.Position.X && playerX < (int)box.Position.X + box.Cols)
                     {
-                        if (py >= (int)box.Position.Y && py < (int)box.Position.Y + box.Rows)
+                        if (playerY >= (int)box.Position.Y && playerY < (int)box.Position.Y + box.Rows)
                         {
                             return true;
                         }
