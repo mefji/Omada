@@ -1,6 +1,6 @@
 ﻿namespace Omada
 {
-    internal abstract class GameObject
+    public abstract class GameObject
     {
         public bool IsActive { get; set; } = true;
 

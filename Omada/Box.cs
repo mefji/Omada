@@ -2,21 +2,17 @@
 
 namespace Omada
 {
-    internal class Box : GameObject
+    public class Box : BoxCollider
     {
-        public Vector2 Position;
-        public int Rows;
-        public int Cols;
         public Vector2 Velocity;
         public char[] Shape;
 
-        public Box(Vector2 position, int rows, int cols, Vector2 velocity, char c)
+        public Box(Vector2 position, Vector2 size, Vector2 velocity, char c)
         {
             Position = position;
-            Rows = rows;
-            Cols = cols;
+            Size = size;
             Velocity = velocity;
-            Shape = ShapeFactory.CreateBox(c, Rows, Cols);
+            Shape = ShapeFactory.CreateBox(c, (int)size.Y, (int)size.X);
         }
 
         public override void Update(float deltaTime)
@@ -29,16 +25,16 @@ namespace Omada
                 Velocity = new Vector2(-Velocity.X, Velocity.Y);
             }
 
-            if (Position.X + Cols >= GameParameters.ScreenWidth)
+            if (Position.X + Size.X >= GameParameters.ScreenWidth)
             {
-                Position = new Vector2(GameParameters.ScreenWidth - Cols - 1, Position.Y);
+                Position = new Vector2(GameParameters.ScreenWidth - Size.X - 1, Position.Y);
                 Velocity = new Vector2(-Velocity.X, Velocity.Y);
             }
         }
 
         public override void Render(char[] buffer)
         {
-            ShapeRenderer.DrawShape(buffer, Position, Shape, Rows, Cols);
+            ShapeRenderer.DrawShape(buffer, Position, Shape, (int)Size.Y, (int)Size.X);
         }
     }
 }

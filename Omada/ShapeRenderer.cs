@@ -2,7 +2,7 @@
 
 namespace Omada
 {
-    internal static class ShapeRenderer
+    public static class ShapeRenderer
     {
         private const int Width = 120;
         private const int Height = 30;

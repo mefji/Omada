@@ -1,6 +1,6 @@
 ﻿namespace Omada
 {
-    internal static class TextRenderer
+    public static class TextRenderer
     {
         private const int Width = 120;
         private const int Height = 30;

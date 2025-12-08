@@ -1,18 +1,20 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 
 namespace Omada
 {
-    internal class Program
+    public class Program
     {
         const int MaxLives = 3;
         const double TargetFps = 300;
 
         static Player Player;
         static Box TopBox;
-        static Box BottomBox;
+        static Circle Circle;
 
         static List<GameObject> Objects = new List<GameObject>();
-        static char[] Buffer = new char[GameParameters.ScreenHeight * GameParameters.ScreenWidth]; 
+        static char[] Buffer = new char[GameParameters.ScreenHeight * GameParameters.ScreenWidth];
 
         static int Lives = MaxLives;
         static double TimeAlive = 0;
@@ -26,20 +28,20 @@ namespace Omada
             Console.SetWindowSize(GameParameters.ScreenWidth, GameParameters.ScreenHeight);
             Console.SetBufferSize(GameParameters.ScreenWidth, GameParameters.ScreenHeight);
 
-            Player = new Player(new Vector2(2, 8), 5, 5);
-            TopBox = new Box(new Vector2(80, 3), 5, 10, new Vector2(-60, 0), '#');
-            BottomBox = new Box(new Vector2(60, 18), 5, 10, new Vector2(60, 0), '#');
+            Player = new Player(new Vector2(2, 8), new Vector2(5, 5));
+            TopBox = new Box(new Vector2(80, 3), new Vector2(10, 5), new Vector2(-60, 0), '#');
+            Circle = new Circle(new Vector2(60, 18), 3, new Vector2(60, 0), 'O');
 
             Objects.Add(Player);
             Objects.Add(TopBox);
-            Objects.Add(BottomBox);
+            Objects.Add(Circle);
 
             DateTime startTime = DateTime.Now;
             double previousTime = 0;
             double currentTime = 0;
             double deltaTime = 0;
 
-            while (Lives > 0 && Player.Rows > 0)
+            while (Lives > 0 && Player.IsActive)
             {
                 currentTime = (DateTime.Now - startTime).TotalSeconds;
                 deltaTime += currentTime - previousTime;
@@ -56,6 +58,7 @@ namespace Omada
                 Update((float)deltaTime);
                 Render();
                 deltaTime = 0;
+                Lives = Player.Lives;
             }
 
             Console.SetCursorPosition(0, GameParameters.ScreenHeight - 1);
@@ -78,7 +81,7 @@ namespace Omada
                 }
                 else if (key == ConsoleKey.RightArrow)
                 {
-                    if (Player.Position.X + Player.Cols < GameParameters.ScreenWidth)
+                    if (Player.Position.X + Player.Size.X < GameParameters.ScreenWidth)
                     {
                         Player.Position = new Vector2(Player.Position.X + 1, Player.Position.Y);
                     }
@@ -92,7 +95,7 @@ namespace Omada
                 }
                 else if (key == ConsoleKey.DownArrow)
                 {
-                    if (Player.Position.Y + Player.Rows < GameParameters.ScreenHeight)
+                    if (Player.Position.Y + Player.Size.Y < GameParameters.ScreenHeight)
                     {
                         Player.Position = new Vector2(Player.Position.X, Player.Position.Y + 1);
                     }
@@ -112,45 +115,36 @@ namespace Omada
                 }
             }
 
-            if (CollisionChecker.CheckCollision(Player, TopBox))
+            foreach (var obj in Objects)
             {
-                HitPlayer();
-            }
+                if (!obj.IsActive)
+                {
+                    continue;
+                }
 
-            if (CollisionChecker.CheckCollision(Player, BottomBox))
-            {
-                HitPlayer();
-            }
-        }
+                if (obj is ICollider collidableA)
+                {
+                    foreach (var other in Objects)
+                    {
+                        if (!other.IsActive || other == obj)
+                        {
+                            continue;
+                        }
 
-        static void HitPlayer()
-        {
-            if (Lives <= 0 || Player.Rows <= 0)
-            {
-                return;
-            }
+                        if (other is ICollider collidableB && collidableA.IsCollidingWith(collidableB))
+                        {
+                            if (collidableB is IColliderCallback callbackB)
+                            {
+                                callbackB.OnCollision(collidableA);
+                            }
 
-            Lives--;
-
-            if (Player.Rows > 0)
-            {
-                Player.Rows -= 1;
-                Player.UpdateShape();
-            }
-
-            if (Player.Rows <= 0)
-            {
-                Lives = 0;
-                return;
-            }
-
-            if (Player.Position.Y + Player.Rows >= GameParameters.ScreenHeight)
-            {
-                Player.Position = new Vector2(Player.Position.X, GameParameters.ScreenHeight - Player.Rows - 1);
-            }
-            if (Player.Position.Y < 2)
-            {
-                Player.Position = new Vector2(Player.Position.X, 2);
+                            if (collidableA is IColliderCallback callbackA)
+                            {
+                                callbackA.OnCollision(collidableB);
+                            }
+                        }
+                    }
+                }
             }
         }
 
